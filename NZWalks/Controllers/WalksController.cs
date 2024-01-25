@@ -21,9 +21,9 @@ public class WalksController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery)
     {
-        var walkDomainModel = await _walkPepository.GetAllAsync();
+        var walkDomainModel = await _walkPepository.GetAllAsync(filterOn, filterQuery);
         var walkDtos = _mapper.Map<List<WalkDto>>(walkDomainModel);
         return Ok(walkDtos);
     }
