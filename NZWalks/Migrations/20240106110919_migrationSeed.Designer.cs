@@ -11,7 +11,7 @@ using NZWalks.Data;
 
 namespace NZWalks.Migrations
 {
-    [DbContext(typeof(NZWalkDbContext))]
+    [DbContext(typeof(NZWalkAuthDbContext))]
     [Migration("20240106110919_migrationSeed")]
     partial class migrationSeed
     {

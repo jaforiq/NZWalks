@@ -8,24 +8,42 @@ namespace NZWalks.Repositories;
 
 public class SQLWalkRepository : IWalkPepository
 {
-    private readonly NZWalkDbContext _dbContext;
+    private readonly NZWalkAuthDbContext _dbContext;
 
-    public SQLWalkRepository(NZWalkDbContext dbContext)
+    public SQLWalkRepository(NZWalkAuthDbContext dbContext)
     {
         _dbContext = dbContext;
     }
-    public async Task<List<Walk>> GetAllAsync([FromQuery] string? filterOn = null, [FromQuery] string? filterQuery = null)
+    public async Task<List<Walk>> GetAllAsync([FromQuery] string? filterOn = null, [FromQuery] string? filterQuery = null
+        ,[FromQuery] string? sortBy = null , [FromQuery] bool isAscending = true, int pageNumber = 1, int pageSize = 1)
     {
         var walks = _dbContext.Walks.Include("Difficulty").Include("Region").AsQueryable();  //Include(x => x.Difficult) this is type safe(vul likhle compile time e error dibe)
         // filtering
         if (string.IsNullOrWhiteSpace(filterOn) == false && string.IsNullOrWhiteSpace(filterQuery) == false)
         {
-            if(filterOn.Equals("Name", StringComparison.OrdinalIgnoreCase))
+            if(filterOn.Equals("Name", StringComparison.OrdinalIgnoreCase)) 
             {
-            walks = walks.Where(x => x.Name.Contains(filterQuery));
+            walks = walks.Where(x => x.Name.Contains(filterQuery));  //get all names that contains filterQuery as input  
             }
         }
-        return await walks.ToListAsync();
+
+        // Sorting 
+        if (string.IsNullOrWhiteSpace(sortBy) == false)
+        {
+            if(sortBy.Equals("Name", StringComparison.OrdinalIgnoreCase))
+            {
+                walks = isAscending ? walks.OrderBy(x => x.Name) : walks.OrderByDescending(x => x.Name);
+            }
+            else if(sortBy.Equals("Length", StringComparison.CurrentCultureIgnoreCase))
+            {
+                walks = isAscending ? walks.OrderBy(x => x.LengthInKM) : walks.OrderByDescending(x => x.LengthInKM);
+            }
+
+        }
+
+        // Pagination
+        var skipResult = (pageNumber - 1) * pageSize;
+        return await walks.Skip(skipResult).Take(pageSize).ToListAsync();
         //return await _dbContext.Walks.Include("Difficulty").Include("Region").ToListAsync();
 
     }

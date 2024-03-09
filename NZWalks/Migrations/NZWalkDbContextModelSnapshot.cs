@@ -10,7 +10,7 @@ using NZWalks.Data;
 
 namespace NZWalks.Migrations
 {
-    [DbContext(typeof(NZWalkDbContext))]
+    [DbContext(typeof(NZWalkAuthDbContext))]
     partial class NZWalkDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

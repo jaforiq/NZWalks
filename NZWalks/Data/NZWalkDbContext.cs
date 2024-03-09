@@ -3,9 +3,9 @@ using NZWalks.Models.Domains;
 
 namespace NZWalks.Data
 {
-    public class NZWalkDbContext : DbContext
+    public class NZWalkAuthDbContext : DbContext
     {
-        public NZWalkDbContext(DbContextOptions dbContextOptions): base(dbContextOptions)
+        public NZWalkAuthDbContext(DbContextOptions<NZWalkAuthDbContext> dbContextOptions): base(dbContextOptions) // ekadik DbContext thakle <> bole dite hoy
         {
 
         }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using NZWalks.CustomActionFilters;
 using NZWalks.Models.Domains;
 using NZWalks.Models.DTOs;
 using NZWalks.Repositories;
@@ -9,7 +10,7 @@ namespace NZWalks.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class WalksController : Controller
+public class WalksController : ControllerBase
 {
     private readonly IMapper _mapper;
     private readonly IWalkPepository _walkPepository;
@@ -21,24 +22,28 @@ public class WalksController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery)
+    public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery
+        , [FromQuery] string? sortBy, [FromQuery] bool? isAscending, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 3)
     {
-        var walkDomainModel = await _walkPepository.GetAllAsync(filterOn, filterQuery);
+        var walkDomainModel = await _walkPepository.GetAllAsync(filterOn, filterQuery, sortBy, isAscending ?? true, pageNumber,pageSize);  //null coalescing operator
         var walkDtos = _mapper.Map<List<WalkDto>>(walkDomainModel);
         return Ok(walkDtos);
     }
 
     [HttpPost]
+    [ValidateModel]
     public async Task<IActionResult> Create([FromBody] AddWalkRequestDto addWalkRequestDto)
     {
-        // map DTO to model
-        var walkDomainModel = _mapper.Map<Walk>(addWalkRequestDto);
+        
+            // map DTO to model
+            var walkDomainModel = _mapper.Map<Walk>(addWalkRequestDto);
 
-        await _walkPepository.CreateAsync(walkDomainModel);
+            await _walkPepository.CreateAsync(walkDomainModel);
 
-        // map Domain Model to Dto
-        var walkDto = _mapper.Map<WalkDto>(walkDomainModel);
-        return Ok(walkDto);
+            // map Domain Model to Dto
+            var walkDto = _mapper.Map<WalkDto>(walkDomainModel);
+            return Ok(walkDto);
+       
     }
 
 
@@ -57,18 +62,22 @@ public class WalksController : Controller
     }
 
     [HttpPut]
+    [ValidateModel]
     [Route("id:Guid")]
     public async Task<IActionResult> Update([FromQuery] Guid id, [FromBody] UpdateWalkRequestDto updateWalkRequestDto)
     {
-        var walkDomainModel = _mapper.Map<Walk>(updateWalkRequestDto);
-        walkDomainModel = await _walkPepository.UpdateAsync(id, updateWalkRequestDto);
-        if(walkDomainModel == null)
-        {
-            return NotFound();
-        }
+        
+            var walkDomainModel = _mapper.Map<Walk>(updateWalkRequestDto);
+            walkDomainModel = await _walkPepository.UpdateAsync(id, updateWalkRequestDto);
+            if (walkDomainModel == null)
+            {
+                return NotFound();
+            }
 
-        var walkDto = _mapper.Map<WalkDto>(walkDomainModel);
-        return Ok(walkDto);
+            var walkDto = _mapper.Map<WalkDto>(walkDomainModel);
+            return Ok(walkDto);
+        
+        
     }
 
     [HttpDelete]
